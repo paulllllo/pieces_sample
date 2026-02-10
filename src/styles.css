@@ -471,6 +471,11 @@ main {
   background-color: #020617;
 }
 
+.reward-video--youtube {
+  border: none;
+  object-fit: contain;
+}
+
 @media (max-width: 960px) {
   .game-area {
     grid-template-columns: 1fr;

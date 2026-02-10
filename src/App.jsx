@@ -2,6 +2,8 @@ import React from "react";
 import PuzzleGame from "./components/PuzzleGame.jsx";
 
 function App() {
+  const url = "https://youtu.be/4ykTi2jB4NY?si=3FHJWOyMT0ToI2lV";
+
   return (
     <div className="app-root">
       <header className="app-header">
@@ -36,7 +38,7 @@ function App() {
         <p>Drag the pieces into the left area to reconstruct the image.</p>
       </header>
       <main>
-        <PuzzleGame rewardVideoUrl="/reward.mov"/>
+        <PuzzleGame rewardVideoUrl={url}/>
       </main>
     </div>
   );

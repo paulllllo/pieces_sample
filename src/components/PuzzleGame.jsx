@@ -39,6 +39,31 @@ function shuffle(array) {
   return arr;
 }
 
+/**
+ * Detects if a URL is a YouTube URL and extracts the video ID
+ * @param {string} url - The video URL
+ * @returns {string|null} - YouTube embed URL if it's a YouTube link, null otherwise
+ */
+function getYouTubeEmbedUrl(url) {
+  if (!url || typeof url !== 'string') return null;
+
+  // YouTube URL patterns
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\n?#]+)/,
+    /youtube\.com\/.*[?&]v=([^&\n?#]+)/
+  ];
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match && match[1]) {
+      const videoId = match[1].split('?')[0].split('&')[0];
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+  }
+
+  return null;
+}
+
 function PuzzleGame({ rewardVideoUrl }) {
   const pieces = useMemo(() => createPieces(), []);
   const [shuffledIds, setShuffledIds] = useState(() =>
@@ -512,12 +537,23 @@ function PuzzleGame({ rewardVideoUrl }) {
             </header>
             <div className="reward-modal-body">
               <div className="reward-video-frame">
-                <video
-                  className="reward-video"
-                  src={rewardVideoUrl}
-                  controls
-                  playsInline
-                />
+                {getYouTubeEmbedUrl(rewardVideoUrl) ? (
+                  <iframe
+                    className="reward-video reward-video--youtube"
+                    src={getYouTubeEmbedUrl(rewardVideoUrl)}
+                    title="Reward video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video
+                    className="reward-video"
+                    src={rewardVideoUrl}
+                    controls
+                    playsInline
+                  />
+                )}
               </div>
             </div>
           </div>
