@@ -75,12 +75,51 @@ function PuzzleGame({ rewardVideoUrl }) {
   const [isHintVisible, setIsHintVisible] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [isRewardVisible, setIsRewardVisible] = useState(false);
+  
+  // Image dimensions state - dynamically calculated to maintain aspect ratio
+  const [imageDimensions, setImageDimensions] = useState({
+    naturalWidth: BASE_SIZE,
+    naturalHeight: BASE_SIZE,
+    displayWidth: BASE_SIZE,
+    displayHeight: BASE_SIZE
+  });
 
   const gameAreaRef = useRef(null);
   const boardRef = useRef(null);
   const slotRefs = useRef([]);
   const pieceRefs = useRef([]);
   const draggablesRef = useRef([]);
+  const imageRef = useRef(null);
+
+  // Load image and calculate dimensions to maintain aspect ratio
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      const naturalWidth = img.naturalWidth;
+      const naturalHeight = img.naturalHeight;
+      
+      // Calculate display dimensions that fit within BASE_SIZE while maintaining aspect ratio
+      const aspectRatio = naturalWidth / naturalHeight;
+      let displayWidth = BASE_SIZE;
+      let displayHeight = BASE_SIZE;
+      
+      if (aspectRatio > 1) {
+        // Wider than tall - constrain by width
+        displayHeight = BASE_SIZE / aspectRatio;
+      } else if (aspectRatio < 1) {
+        // Taller than wide - constrain by height
+        displayWidth = BASE_SIZE * aspectRatio;
+      }
+      
+      setImageDimensions({
+        naturalWidth,
+        naturalHeight,
+        displayWidth,
+        displayHeight
+      });
+    };
+    img.src = IMAGE_URL;
+  }, []);
 
   // Hint image fade
   useEffect(() => {
@@ -432,9 +471,13 @@ function PuzzleGame({ rewardVideoUrl }) {
           <div
             ref={boardRef}
             className="board-wrapper"
-            style={{ width: `${BASE_SIZE}px`, height: `${BASE_SIZE}px` }}
+            style={{ 
+              width: `${imageDimensions.displayWidth}px`, 
+              height: `${imageDimensions.displayHeight}px` 
+            }}
           >
             <img
+              ref={imageRef}
               src={IMAGE_URL}
               alt="Puzzle hint"
               className="hint-image"
@@ -481,6 +524,7 @@ function PuzzleGame({ rewardVideoUrl }) {
                   rows={ROWS}
                   imageUrl={IMAGE_URL}
                   isCompleted={isComplete}
+                  imageDimensions={imageDimensions}
                   ref={(el) => {
                     pieceRefs.current[id] = el;
                   }}
