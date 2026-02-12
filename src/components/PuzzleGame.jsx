@@ -17,7 +17,7 @@ const TOTAL_PIECES = COLUMNS * ROWS;
 const BASE_SIZE = 400; // should match PuzzlePiece
 
 // Path to your puzzle image. Place a 400x400 image at /public/puzzle.jpg
-const IMAGE_URL = "/puzzle.jpg";
+const IMAGE_URL = "/puzzle.png";
 
 function createPieces() {
   const pieces = [];
