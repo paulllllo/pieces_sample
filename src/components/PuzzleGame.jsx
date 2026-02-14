@@ -17,7 +17,7 @@ const TOTAL_PIECES = COLUMNS * ROWS;
 const BASE_SIZE = 400; // should match PuzzlePiece
 
 // Path to your puzzle image. Place a 400x400 image at /public/puzzle.jpg
-const IMAGE_URL = "/puzzle.png";
+const IMAGE_URL = "/puzzle.jpg";
 
 function createPieces() {
   const pieces = [];
@@ -75,6 +75,7 @@ function PuzzleGame({ rewardVideoUrl }) {
   const [isHintVisible, setIsHintVisible] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
   const [isRewardVisible, setIsRewardVisible] = useState(false);
+  const [videoAspectRatio, setVideoAspectRatio] = useState(16 / 9); // Default to landscape
   
   // Image dimensions state - dynamically calculated to maintain aspect ratio
   const [imageDimensions, setImageDimensions] = useState({
@@ -442,6 +443,29 @@ function PuzzleGame({ rewardVideoUrl }) {
 
   const toggleHint = () => setIsHintVisible((prev) => !prev);
 
+  // Detect video aspect ratio when reward modal opens
+  useEffect(() => {
+    if (!isRewardVisible || !rewardVideoUrl) return;
+    
+    // For YouTube videos, we can't easily detect aspect ratio, so use default
+    if (getYouTubeEmbedUrl(rewardVideoUrl)) {
+      setVideoAspectRatio(16 / 9); // YouTube defaults, but will adapt
+      return;
+    }
+
+    // For regular video files, detect dimensions
+    const video = document.createElement('video');
+    video.src = rewardVideoUrl;
+    video.onloadedmetadata = () => {
+      const aspectRatio = video.videoWidth / video.videoHeight;
+      setVideoAspectRatio(aspectRatio);
+    };
+    video.onerror = () => {
+      // Fallback to landscape if detection fails
+      setVideoAspectRatio(16 / 9);
+    };
+  }, [isRewardVisible, rewardVideoUrl]);
+
   return (
     <section className="game-shell">
       <div className="controls-bar">
@@ -580,7 +604,12 @@ function PuzzleGame({ rewardVideoUrl }) {
               </button>
             </header>
             <div className="reward-modal-body">
-              <div className="reward-video-frame">
+              <div 
+                className="reward-video-frame"
+                style={{ 
+                  aspectRatio: videoAspectRatio > 1 ? `${videoAspectRatio} / 1` : `1 / ${1 / videoAspectRatio}`
+                }}
+              >
                 {getYouTubeEmbedUrl(rewardVideoUrl) ? (
                   <iframe
                     className="reward-video reward-video--youtube"
@@ -596,6 +625,11 @@ function PuzzleGame({ rewardVideoUrl }) {
                     src={rewardVideoUrl}
                     controls
                     playsInline
+                    onLoadedMetadata={(e) => {
+                      const video = e.target;
+                      const aspectRatio = video.videoWidth / video.videoHeight;
+                      setVideoAspectRatio(aspectRatio);
+                    }}
                   />
                 )}
               </div>
